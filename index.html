@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>九月团会 · 网络安全互动小游戏</title>
+<style>
+  :root{
+    --bg:#f2f6fb;
+    --surface:#ffffff;
+    --surface-2:#f8fafc;
+    --text:#16233a;
+    --muted:#5f7290;
+    --primary:#1d4ed8;
+    --primary-soft:#e8effd;
+    --accent:#0891b2;
+    --success:#15803d;
+    --success-soft:#e7f7ec;
+    --danger:#c62828;
+    --danger-soft:#fdeaea;
+    --border:#e2e9f3;
+    --shadow:0 6px 20px rgba(23,43,77,.07);
+    --shadow-lg:0 14px 40px rgba(23,43,77,.12);
+    --radius:16px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB","Source Han Sans SC",system-ui,-apple-system,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    line-height:1.65;
+    min-height:100vh;
+    padding-bottom:40px;
+  }
+  /* ---------- 顶栏 ---------- */
+  header{
+    background:linear-gradient(135deg,#12306e 0%,#1d4ed8 55%,#0891b2 100%);
+    color:#fff;padding:26px 20px 30px;position:relative;overflow:hidden;
+  }
+  header::after{
+    content:"";position:absolute;right:-60px;top:-60px;width:220px;height:220px;
+    background:radial-gradient(circle,rgba(255,255,255,.16),transparent 70%);border-radius:50%;
+  }
+  .hd-inner{max-width:860px;margin:0 auto;position:relative;z-index:1}
+  .hd-tag{
+    display:inline-block;font-size:12px;letter-spacing:2px;background:rgba(255,255,255,.18);
+    border:1px solid rgba(255,255,255,.3);padding:3px 12px;border-radius:999px;margin-bottom:12px;
+  }
+  header h1{margin:0 0 6px;font-size:clamp(20px,4.4vw,30px);font-weight:800;letter-spacing:.5px}
+  header p{margin:0;font-size:13px;opacity:.9}
+  .scorebar{
+    max-width:860px;margin:18px auto 0;position:relative;z-index:1;
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);
+    border-radius:12px;padding:10px 16px;backdrop-filter:blur(4px);
+  }
+  .scorebar .lbl{font-size:13px;opacity:.92}
+  .scorebar .val{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums;transition:transform .25s}
+  .scorebar .val.bump{transform:scale(1.28)}
+
+  /* ---------- 布局 ---------- */
+  main{max-width:860px;margin:-14px auto 0;padding:0 16px;position:relative;z-index:2}
+  .card{
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:22px;margin-bottom:18px;
+  }
+  .card.pad-lg{padding:28px}
+
+  /* ---------- 首页 ---------- */
+  .hero-title{font-size:15px;color:var(--muted);margin:0 0 16px;text-align:center}
+  .games{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+  .gcard{
+    background:var(--surface-2);border:1px solid var(--border);border-radius:14px;
+    padding:18px;cursor:pointer;transition:.22s;text-align:left;position:relative;overflow:hidden;
+  }
+  .gcard:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);border-color:#c9d8f5;background:#fff}
+  .gcard .ico{
+    width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-size:21px;
+    background:var(--primary-soft);margin-bottom:12px;
+  }
+  .gcard h3{margin:0 0 6px;font-size:16px}
+  .gcard p{margin:0;font-size:13px;color:var(--muted)}
+  .gcard .meta{margin-top:12px;font-size:12px;color:var(--primary);font-weight:700}
+  .btn-all{
+    width:100%;margin-top:14px;padding:14px;border-radius:14px;border:none;cursor:pointer;
+    background:linear-gradient(135deg,#1d4ed8,#0891b2);color:#fff;font-size:15px;font-weight:700;
+    box-shadow:0 6px 18px rgba(29,78,216,.28);transition:.2s;font-family:inherit;
+  }
+  .btn-all:hover{filter:brightness(1.07);box-shadow:0 10px 26px rgba(29,78,216,.34)}
+  .btn-all:active{transform:scale(.99)}
+
+  /* ---------- 游戏通用 ---------- */
+  .ghead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px;flex-wrap:wrap}
+  .ghead h2{margin:0;font-size:18px}
+  .chip{
+    font-size:12px;padding:4px 11px;border-radius:999px;background:var(--primary-soft);
+    color:var(--primary);font-weight:700;white-space:nowrap;
+  }
+  .rule{font-size:13px;color:var(--muted);margin:0 0 16px}
+  .prog{height:6px;background:#eaeff7;border-radius:99px;overflow:hidden;margin-bottom:18px}
+  .prog > i{display:block;height:100%;background:linear-gradient(90deg,#1d4ed8,#0891b2);border-radius:99px;transition:width .35s}
+  .qtext{font-size:17px;font-weight:700;margin:0 0 16px}
+
+  .opts{display:flex;flex-direction:column;gap:10px}
+  .opt{
+    display:flex;align-items:flex-start;gap:11px;width:100%;text-align:left;
+    background:var(--surface-2);border:1.5px solid var(--border);border-radius:12px;
+    padding:13px 15px;font-size:15px;cursor:pointer;transition:.18s;color:var(--text);font-family:inherit;line-height:1.55;
+  }
+  .opt:hover:not(.done){border-color:#a9c2f0;background:#fff}
+  .opt .k{
+    flex:none;width:24px;height:24px;border-radius:7px;background:#dbe5f5;color:#33456b;
+    display:grid;place-items:center;font-size:13px;font-weight:800;
+  }
+  .opt.right{border-color:var(--success);background:var(--success-soft)}
+  .opt.right .k{background:var(--success);color:#fff}
+  .opt.wrong{border-color:var(--danger);background:var(--danger-soft)}
+  .opt.wrong .k{background:var(--danger);color:#fff}
+  .opt.done{cursor:default}
+
+  .feedback{
+    margin-top:16px;border-radius:12px;padding:14px 16px;font-size:14px;display:none;
+    animation:pop .28s ease;
+  }
+  @keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .feedback.ok{display:block;background:var(--success-soft);border-left:4px solid var(--success);color:#14532d}
+  .feedback.no{display:block;background:var(--danger-soft);border-left:4px solid var(--danger);color:#7f1d1d}
+  .feedback b{display:block;margin-bottom:4px;font-size:15px}
+  .feedback .exp{color:var(--text);opacity:.85;margin-top:4px}
+
+  .actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+  .btn{
+    padding:11px 22px;border-radius:11px;border:1.5px solid var(--border);background:#fff;
+    color:var(--text);font-size:14px;font-weight:600;cursor:pointer;transition:.18s;font-family:inherit;
+  }
+  .btn:hover{border-color:#a9c2f0;background:var(--surface-2)}
+  .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+  .btn.primary:hover{background:#1740b8;border-color:#1740b8}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .btn.ghost{border:none;background:transparent;color:var(--muted);padding-left:0}
+  .btn.ghost:hover{color:var(--primary);background:transparent}
+
+  /* ---------- 排序题 ---------- */
+  .slots{display:flex;flex-direction:column;gap:9px;margin-bottom:18px}
+  .slot{
+    display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;
+    border:1.5px dashed #c6d3e8;background:var(--surface-2);min-height:52px;transition:.18s;
+  }
+  .slot .no{
+    flex:none;width:26px;height:26px;border-radius:8px;background:#dbe5f5;color:#33456b;
+    display:grid;place-items:center;font-weight:800;font-size:13px;
+  }
+  .slot.filled{border-style:solid;background:#fff;border-color:var(--border);cursor:pointer}
+  .slot.filled:hover{border-color:var(--danger);background:var(--danger-soft)}
+  .slot .ph{color:#9aabc4;font-size:14px}
+  .slot .nm{font-size:15px;font-weight:600;flex:1}
+  .slot .x{font-size:12px;color:var(--muted)}
+  .pool{display:flex;flex-wrap:wrap;gap:9px}
+  .pool .p{
+    padding:11px 16px;border-radius:11px;border:1.5px solid var(--primary);background:var(--primary-soft);
+    color:var(--primary);font-size:14px;font-weight:600;cursor:pointer;transition:.18s;font-family:inherit;
+  }
+  .pool .p:hover{background:var(--primary);color:#fff}
+  .pool-hint{font-size:13px;color:var(--muted);margin:0 0 10px}
+
+  /* ---------- 结算 ---------- */
+  .result-card{
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+    box-shadow:var(--shadow-lg);padding:34px 24px;text-align:center;
+  }
+  .big-score{
+    font-size:64px;font-weight:900;line-height:1;
+    background:linear-gradient(135deg,#1d4ed8,#0891b2);-webkit-background-clip:text;background-clip:text;color:transparent;
+    font-variant-numeric:tabular-nums;margin:8px 0 4px;
+  }
+  .unit{font-size:15px;color:var(--muted)}
+  .title-badge{
+    display:inline-block;margin:16px 0 10px;padding:9px 20px;border-radius:999px;
+    background:linear-gradient(135deg,#1d4ed8,#0891b2);color:#fff;font-weight:800;font-size:16px;
+  }
+  .title-badge.silver{background:linear-gradient(135deg,#475569,#64748b)}
+  .title-badge.bronze{background:linear-gradient(135deg,#b45309,#d97706)}
+  .slogan{margin-top:18px;font-size:13px;color:var(--muted)}
+  .detail{margin-top:20px;text-align:left;border-top:1px dashed var(--border);padding-top:16px;font-size:14px}
+  .detail div{display:flex;justify-content:space-between;padding:5px 0;color:var(--muted)}
+  .detail div b{color:var(--text);font-variant-numeric:tabular-nums}
+
+  .hide{display:none !important}
+  footer{text-align:center;font-size:12px;color:#8b9ab3;padding:10px 16px 0}
+  @media (max-width:480px){
+    .card{padding:18px}
+    .big-score{font-size:52px}
+    .opt{font-size:14px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hd-inner">
+    <span class="hd-tag">九月团会 · 主题团日活动</span>
+    <h1>增强网络安全意识　共筑智能时代防线</h1>
+    <p>管理科学与工程类 2601 / 2604 班团支部 · 现场互动小游戏</p>
+  </div>
+  <div class="scorebar">
+    <span class="lbl">当前累计积分</span>
+    <span><span class="val" id="scoreVal">0</span> <span style="font-size:13px;opacity:.85">分</span></span>
+  </div>
+</header>
+
+<main>
+  <!-- ============ 首页 ============ -->
+  <section id="home">
+    <div class="card pad-lg">
+      <p class="hero-title">选择一项挑战，或直接「全部挑战一遍」</p>
+      <div class="games">
+        <div class="gcard" onclick="startGame('quiz')">
+          <div class="ico">🛡️</div>
+          <h3>游戏一 · 知识闯关</h3>
+          <p>7 道网络安全情景单选题，覆盖钓鱼邮件、公共 Wi-Fi、转账诈骗等场景。</p>
+          <div class="meta">每题答对 +10 分</div>
+        </div>
+        <div class="gcard" onclick="startGame('judge')">
+          <div class="ico">⚖️</div>
+          <h3>游戏二 · 真假辨别</h3>
+          <p>10 个日常上网行为，快速判断这个习惯到底安全不安全。</p>
+          <div class="meta">每项正确 +8 分</div>
+        </div>
+        <div class="gcard" onclick="startGame('sort')">
+          <div class="ico">🧭</div>
+          <h3>游戏三 · 流程排序</h3>
+          <p>把发展党员 5 个阶段按先后顺序排好，考验团务知识熟练度。</p>
+          <div class="meta">全对 +40 分 / 部分正确每个 +8 分</div>
+        </div>
+      </div>
+      <button class="btn-all" onclick="startAll()">🚀 全部挑战一遍 + 结算</button>
+    </div>
+  </section>
+
+  <!-- ============ 游戏一：知识闯关 ============ -->
+  <section id="quiz" class="hide">
+    <div class="card">
+      <div class="ghead">
+        <h2>🛡️ 游戏一 · 网络安全知识闯关</h2>
+        <span class="chip" id="quizChip">第 1 / 7 题</span>
+      </div>
+      <p class="rule">规则：每题答对 +10 分，共 7 题</p>
+      <div class="prog"><i id="quizProg" style="width:0%"></i></div>
+      <p class="qtext" id="quizQ"></p>
+      <div class="opts" id="quizOpts"></div>
+      <div class="feedback" id="quizFb"></div>
+      <div class="actions">
+        <button class="btn primary hide" id="quizNext" onclick="quizNext()">下一题 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 游戏二：真假辨别 ============ -->
+  <section id="judge" class="hide">
+    <div class="card">
+      <div class="ghead">
+        <h2>⚖️ 游戏二 · 安全行为真假辨别</h2>
+        <span class="chip" id="judgeChip">第 1 / 10 个</span>
+      </div>
+      <p class="rule">规则：判断该上网行为是否安全，答对 +8 分</p>
+      <div class="prog"><i id="judgeProg" style="width:0%"></i></div>
+      <p class="qtext" id="judgeQ"></p>
+      <div class="opts">
+        <button class="opt" id="jYes" onclick="judgeAnswer(true)"><span class="k">✓</span><span>安全</span></button>
+        <button class="opt" id="jNo" onclick="judgeAnswer(false)"><span class="k">✕</span><span>不安全</span></button>
+      </div>
+      <div class="feedback" id="judgeFb"></div>
+      <div class="actions">
+        <button class="btn primary hide" id="judgeNext" onclick="judgeNext()">下一题 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 游戏三：流程排序 ============ -->
+  <section id="sort" class="hide">
+    <div class="card">
+      <div class="ghead">
+        <h2>🧭 游戏三 · 团务流程排序</h2>
+        <span class="chip">全对 +40 分</span>
+      </div>
+      <p class="rule">规则：把 5 个阶段按先后顺序排列（1 = 最先发生）</p>
+      <div class="slots" id="slots"></div>
+      <p class="pool-hint">点击下方卡片填入下一个空位，点击已填位置可撤回：</p>
+      <div class="pool" id="pool"></div>
+      <div class="feedback" id="sortFb"></div>
+      <div class="actions">
+        <button class="btn primary hide" id="sortSubmit" onclick="sortSubmit()">提交答案</button>
+        <button class="btn ghost" onclick="sortReset()">重新排列</button>
+      </div>
+      <div class="actions hide" id="sortAfter">
+        <button class="btn primary" id="sortNextBtn" onclick="afterSort()">继续 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 结算 ============ -->
+  <section id="settle" class="hide">
+    <div class="result-card">
+      <div style="font-size:13px;color:var(--muted);letter-spacing:3px">团 会 互 动 结 算</div>
+      <div class="big-score" id="finalScore">0</div>
+      <div class="unit">分</div>
+      <div class="title-badge" id="finalTitle">称号</div>
+      <p class="slogan" id="finalMsg"></p>
+      <div class="detail" id="finalDetail"></div>
+      <div class="actions" style="justify-content:center;margin-top:24px">
+        <button class="btn" onclick="backHome()">返回首页</button>
+        <button class="btn primary" onclick="restartAll()">再玩一次</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>网络安全为人民，网络安全靠人民</footer>
+
+<script>
+/* ================= 数据（原 Python 脚本内容） ================= */
+const QUIZ = [
+  {q:"收到一封陌生邮件，里面有「中奖链接」，正确的做法是？",
+   opts:["手快，直接点进去看看","不随意点击不明链接、图片、文件","转发给同学一起领"],
+   ans:"B",
+   exp:"网络安全技能第一条：不随意点击不明邮件中的链接、图片、文件，不明链接常携带病毒或攻击软件。"},
+  {q:"关于手机连接 Wi-Fi，以下哪种习惯是正确的？",
+   opts:["见到免费 Wi-Fi 就连，见码就扫","不见 Wi-Fi 就连、见码就扫，谨慎连接"],
+   ans:"B",
+   exp:"公共 Wi-Fi 不安全，要「不见 Wi-Fi 就连、见码就扫」，避免被钓鱼热点窃取信息。"},
+  {q:"群里有人发信息要转账，最稳妥的处理是？",
+   opts:["关系好，马上转","先核查发信人身份，金额大时视频确认","先转一半意思一下"],
+   ans:"B",
+   exp:"网络转账务必先核实对方身份，钱数过大要视频确认，防止冒充诈骗。"},
+  {q:"网购支付时，下列哪项是正确的？",
+   opts:["登录时勾选「记住密码」方便下次","从官方渠道下载支付客户端、核对网站域名","哪个链接便宜点哪个"],
+   ans:"B",
+   exp:"支付客户端要从官方网站下载、开启实名认证，登录别选「记住密码」，网购要核对域名。"},
+  {q:"和网友见面，安全的做法是？",
+   opts:["一个人悄悄去，选偏僻地方","有信任的朋友陪伴，选白天人多的场所","把家庭住址电话都告诉对方"],
+   ans:"B",
+   exp:"与网友见面须有信任朋友陪伴，选白天人多场所；不轻易告知住址、电话等真实信息。"},
+  {q:"关于「翻墙」浏览境外网站，说法正确的是？",
+   opts:["能翻墙看到「真相」，多多益善","非正规渠道软件易泄露隐私，还可能陷入政治陷阱、接触网赌网贷等违法内容","只要不看敏感内容就没事"],
+   ans:"B",
+   exp:"翻墙危害有三：陷入政治陷阱、诱发问题案件、泄露个人隐私，「揭秘」多为精心炮制的反宣言论。"},
+  {q:"某高校学生利用教务系统漏洞导出同学信息，他的行为？",
+   opts:["只是技术炫技，不算什么","构成非法获取计算机信息系统数据罪，触犯法律","只要不外传就合法"],
+   ans:"B",
+   exp:"突破授权即触碰法律红线，构成「非法获取计算机信息系统数据罪」，技术行为必须合法合规。"}
+];
+
+const JUDGE = [
+  ["在陌生网页下载「破解版」游戏安装包。",false,"来历不明的文件常携带病毒或黑客软件。"],
+  ["支付 App 开启实名认证，并只从官方渠道下载。",true,"官方渠道 + 实名认证，正确习惯。"],
+  ["把 Wi-Fi、蓝牙一直开着，方便随时连接。",false,"蓝牙、定位应按需开启，减少被攻击面。"],
+  ["微信、QQ 的实时定位功能平时关闭。",true,"关闭精确定位，保护个人隐私。"],
+  ["网友索要身份证照片，爽快发过去。",false,"真实身份信息不能轻易透露。"],
+  ["登录公共电脑后，主动不勾选「记住密码」。",true,"不记住密码，避免账号被盗。"],
+  ["群里「老师」催缴费用，先打电话核实身份再交。",true,"先核实身份，防冒充诈骗。"],
+  ["收到「ETC 过期」短信，点短信里的链接去「认证」。",false,"典型钓鱼短信，应通过官方渠道核实。"],
+  ["手机安装正规安全软件并定期扫描。",true,"定期扫描，及时查杀风险。"],
+  ["网购前核对网站域名是否与官方一致。",true,"核对域名，避免钓鱼网站。"]
+];
+
+const STEPS = [
+  ["递交入党申请书",1],
+  ["确定为入党积极分子",2],
+  ["成为发展对象",3],
+  ["接收为预备党员",4],
+  ["预备期满转正为正式党员",5]
+];
+
+/* ================= 全局状态 ================= */
+let total = 0;
+let stats = {quiz:0, judge:0, sort:0};
+let queue = [];              // 全部挑战时的游戏队列
+const KEYS = ["A","B","C","D","E"];
+
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function show(id){["home","quiz","judge","sort","settle"].forEach(s=>document.getElementById(s).classList.toggle("hide", s!==id));window.scrollTo({top:0,behavior:"smooth"});}
+function addScore(n){
+  total += n;
+  const el = document.getElementById("scoreVal");
+  el.textContent = total;
+  el.classList.add("bump");
+  setTimeout(()=>el.classList.remove("bump"),260);
+}
+
+/* ================= 游戏一 ================= */
+let qList = [], qIdx = 0;
+function startGame(name){ if(name==="quiz") startQuiz(); else if(name==="judge") startJudge(); else startSort(); }
+
+function startQuiz(){
+  qList = shuffle(QUIZ); qIdx = 0;
+  show("quiz"); renderQuiz();
+}
+function renderQuiz(){
+  const it = qList[qIdx];
+  document.getElementById("quizChip").textContent = "第 " + (qIdx+1) + " / " + qList.length + " 题";
+  document.getElementById("quizProg").style.width = (qIdx/qList.length*100) + "%";
+  document.getElementById("quizQ").textContent = "第 " + (qIdx+1) + " 题：" + it.q;
+  const box = document.getElementById("quizOpts"); box.innerHTML = "";
+  it.opts.forEach((o,i)=>{
+    const b = document.createElement("button");
+    b.className = "opt";
+    b.innerHTML = '<span class="k">'+KEYS[i]+'</span><span>'+o+'</span>';
+    b.onclick = ()=>quizAnswer(i,b);
+    box.appendChild(b);
+  });
+  const fb = document.getElementById("quizFb");
+  fb.className = "feedback"; fb.innerHTML = "";
+  document.getElementById("quizNext").classList.add("hide");
+}
+function quizAnswer(i,btn){
+  const it = qList[qIdx];
+  const correct = KEYS[i] === it.ans;
+  [...document.getElementById("quizOpts").children].forEach((b,bi)=>{
+    b.classList.add("done");
+    if(KEYS[bi] === it.ans) b.classList.add("right");
+  });
+  if(!correct) btn.classList.add("wrong");
+  const fb = document.getElementById("quizFb");
+  fb.className = "feedback " + (correct ? "ok" : "no");
+  fb.innerHTML = "<b>" + (correct ? "✅ 回答正确！+10 分" : "❌ 回答错误，正确答案是 " + it.ans) + "</b>"
+               + '<div class="exp">[解析] ' + it.exp + "</div>";
+  if(correct){ addScore(10); stats.quiz++; }
+  const nx = document.getElementById("quizNext");
+  nx.classList.remove("hide");
+  nx.textContent = (qIdx === qList.length-1) ? "完成本关 →" : "下一题 →";
+}
+function quizNext(){
+  qIdx++;
+  if(qIdx >= qList.length){ finishOne(); return; }
+  renderQuiz();
+}
+
+/* ================= 游戏二 ================= */
+let jList = [], jIdx = 0;
+function startJudge(){
+  jList = shuffle(JUDGE); jIdx = 0;
+  show("judge"); renderJudge();
+}
+function renderJudge(){
+  const [scene] = jList[jIdx];
+  document.getElementById("judgeChip").textContent = "第 " + (jIdx+1) + " / " + jList.length + " 个";
+  document.getElementById("judgeProg").style.width = (jIdx/jList.length*100) + "%";
+  document.getElementById("judgeQ").textContent = "第 " + (jIdx+1) + " 个行为：" + scene;
+  ["jYes","jNo"].forEach(id=>{const e=document.getElementById(id);e.classList.remove("done","right","wrong");});
+  const fb = document.getElementById("judgeFb");
+  fb.className = "feedback"; fb.innerHTML = "";
+  document.getElementById("judgeNext").classList.add("hide");
+}
+function judgeAnswer(ans){
+  const [scene, isSafe, exp] = jList[jIdx];
+  const ok = ans === isSafe;
+  const y = document.getElementById("jYes"), n = document.getElementById("jNo");
+  y.classList.add("done"); n.classList.add("done");
+  (isSafe ? y : n).classList.add("right");
+  if(!ok) (ans ? y : n).classList.add("wrong");
+  const fb = document.getElementById("judgeFb");
+  fb.className = "feedback " + (ok ? "ok" : "no");
+  fb.innerHTML = "<b>" + (ok ? "✅ 判断正确！该行为" + (isSafe?"安全":"不安全") + "。+8 分"
+                             : "❌ 判断错误，正确答案：" + (isSafe?"安全":"不安全")) + "</b>"
+               + '<div class="exp">[点评] ' + exp + "</div>";
+  if(ok){ addScore(8); stats.judge++; }
+  const nx = document.getElementById("judgeNext");
+  nx.classList.remove("hide");
+  nx.textContent = (jIdx === jList.length-1) ? "完成本关 →" : "下一题 →";
+}
+function judgeNext(){
+  jIdx++;
+  if(jIdx >= jList.length){ finishOne(); return; }
+  renderJudge();
+}
+
+/* ================= 游戏三 ================= */
+let sPool = [], sSlots = [null,null,null,null,null];
+function startSort(){
+  sPool = shuffle(STEPS.map(s=>s[0]));
+  sSlots = [null,null,null,null,null];
+  show("sort"); sortReset();
+}
+function sortReset(){
+  sSlots = [null,null,null,null,null];
+  const fb = document.getElementById("sortFb"); fb.className="feedback"; fb.innerHTML="";
+  document.getElementById("sortAfter").classList.add("hide");
+  renderSort();
+}
+function renderSort(){
+  const sw = document.getElementById("slots"); sw.innerHTML = "";
+  for(let i=0;i<5;i++){
+    const d = document.createElement("div");
+    const nm = sSlots[i];
+    d.className = "slot" + (nm ? " filled" : "");
+    d.innerHTML = '<span class="no">'+(i+1)+'</span>'
+      + (nm ? '<span class="nm">'+nm+'</span><span class="x">点击撤回</span>'
+            : '<span class="ph">待填入…</span>');
+    if(nm) d.onclick = ()=>{ sSlots[i]=null; renderSort(); };
+    sw.appendChild(d);
+  }
+  const pw = document.getElementById("pool"); pw.innerHTML = "";
+  sPool.forEach(nm=>{
+    if(sSlots.indexOf(nm) >= 0) return;
+    const b = document.createElement("button");
+    b.className = "p"; b.textContent = nm;
+    b.onclick = ()=>{
+      const k = sSlots.indexOf(null);
+      if(k < 0) return;
+      sSlots[k] = nm; renderSort();
+    };
+    pw.appendChild(b);
+  });
+  document.getElementById("sortSubmit").classList.toggle("hide", sSlots.indexOf(null) >= 0);
+}
+function sortSubmit(){
+  const correct = STEPS.slice().sort((a,b)=>a[1]-b[1]).map(s=>s[0]);
+  let matched = 0;
+  for(let i=0;i<5;i++) if(sSlots[i] === correct[i]) matched++;
+  const allRight = matched === 5;
+  const fb = document.getElementById("sortFb");
+  let html = "";
+  if(allRight){
+    html = "<b>🎉 完全正确！团务流程一气呵成。+40 分</b>";
+    addScore(40); stats.sort = 40;
+  }else{
+    html = "<b>顺序有误。正确流程为：</b><div class='exp'>"
+         + correct.map((n,i)=>(i+1)+". "+n).join("　→　") + "</div>";
+    const gain = matched * 8;
+    if(gain){ html += "<div class='exp'>你对了 " + matched + " 个位置，+" + gain + " 分</div>"; addScore(gain); }
+    else { html += "<div class='exp'>很遗憾一个位置都没对上，记得复习团务流程~</div>"; }
+    stats.sort = gain;
+  }
+  fb.className = "feedback " + (allRight ? "ok" : "no");
+  fb.innerHTML = html;
+  document.getElementById("sortSubmit").classList.add("hide");
+  document.getElementById("sortAfter").classList.remove("hide");
+  document.getElementById("sortNextBtn").textContent = queue.length ? "继续 →" : "查看结算 →";
+}
+function afterSort(){ finishOne(); }
+
+/* ================= 流程控制 ================= */
+function startAll(){
+  total = 0; stats = {quiz:0,judge:0,sort:0};
+  document.getElementById("scoreVal").textContent = "0";
+  queue = ["quiz","judge","sort"];
+  startQuiz();
+}
+function finishOne(){
+  if(queue.length){
+    const nxt = queue.shift();
+    startGame(nxt);
+  }else{
+    settle();
+  }
+}
+function settle(){
+  show("settle");
+  document.getElementById("finalScore").textContent = total;
+  const b = document.getElementById("finalTitle"), m = document.getElementById("finalMsg");
+  b.className = "title-badge";
+  if(total >= 100){
+    b.textContent = "🏆 网络安全小卫士";
+    m.textContent = "表现优异！建议颁发一等奖。";
+  }else if(total >= 60){
+    b.classList.add("silver");
+    b.textContent = "👍 合格网民";
+    m.textContent = "基础扎实，再接再厉，可获参与奖。";
+  }else{
+    b.classList.add("bronze");
+    b.textContent = "📖 意识待加强";
+    m.textContent = "网络安全意识还有提升空间，记得多复习今天的团会内容~";
+  }
+  document.getElementById("finalDetail").innerHTML =
+      "<div><span>游戏一 知识闯关（答对题数）</span><b>" + stats.quiz + " / " + QUIZ.length + "</b></div>"
+    + "<div><span>游戏二 真假辨别（判断正确）</span><b>" + stats.judge + " / " + JUDGE.length + "</b></div>"
+    + "<div><span>游戏三 流程排序（得分）</span><b>" + stats.sort + " 分</b></div>";
+}
+function backHome(){ queue = []; show("home"); }
+function restartAll(){ startAll(); }
+</script>
+</body>
+</html>
